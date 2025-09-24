@@ -15,15 +15,7 @@ export const PDFDownloadButton = ({ resultText }: { resultText: string }) => {
         <PDFDownloadLink
             document={<ResumePDF resultText={resultText} />}
             fileName="resume.pdf"
-            // Style the link to look like a button
-            style={{
-                backgroundColor: '#007bff',
-                color: 'white',
-                padding: '10px 20px',
-                borderRadius: '5px',
-                textDecoration: 'none',
-                fontWeight: 'bold',
-            }}
+            className="flex items-center justify-center space-x-2 w-full h-full"
         >
             {({ blob, url, loading, error }) =>
                 loading ? 'Generating PDF...' : 'Download as PDF'

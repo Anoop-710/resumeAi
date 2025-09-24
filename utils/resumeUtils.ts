@@ -1,6 +1,8 @@
 // utils/resumeUtils.ts
 
-// File Upload
+// --------------------
+// File Upload Handler
+// --------------------
 export const handleFileUpload = (
     type: string,
     event: React.ChangeEvent<HTMLInputElement>,
@@ -10,7 +12,9 @@ export const handleFileUpload = (
     setFiles((prev: any) => ({ ...prev, [type]: file }));
 };
 
-// Simple form data posting function
+// --------------------
+// Post FormData
+// --------------------
 export const postFormData = async (url: string, formData: FormData) => {
     const res = await fetch(url, {
         method: "POST",
@@ -24,7 +28,9 @@ export const postFormData = async (url: string, formData: FormData) => {
     return await res.json();
 };
 
+// --------------------
 // Submit Handler
+// --------------------
 export const handleSubmit = async (
     section: string,
     {
@@ -67,14 +73,7 @@ export const handleSubmit = async (
             formData.append("techStack", techStack);
         }
 
-        const res = await fetch("/api/polishResume", {
-            method: "POST",
-            body: formData,
-        });
-
-        if (!res.ok) throw new Error("Something went wrong.");
-
-        const data = await res.json();
+        const data = await postFormData("/api/polishResume", formData);
         setResultText(data.result || "No result generated");
     } catch (err: any) {
         setError(err.message || "Error occurred");
@@ -83,82 +82,148 @@ export const handleSubmit = async (
     }
 };
 
-// DOCX Download with docx
+// --------------------
+// Optimized DOCX Download
+// --------------------
 export const downloadAsDOCX = async (resultText: string) => {
     const { Document, Packer, Paragraph, TextRun } = await import("docx");
 
-    // The rest of your DOCX function remains unchanged...
     const raw = resultText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
     const sections = raw.split(/\n{2,}/);
 
     const children: any[] = [];
 
+    const FONT_SIZE_HEADING = 28; // ~14pt
+    const FONT_SIZE_PARAGRAPH = 24; // ~12pt
+    const FONT_NAME = "Calibri";
+
+    // ---------- Helpers ----------
     const mkHeading = (text: string) =>
         new Paragraph({
-            children: [new TextRun({ text, bold: true, size: 26 })], // ~13pt
-            spacing: { after: 100 },
-            keepNext: true, // prevent orphaned headings
-            keepLines: true,
+            children: [new TextRun({ text: text.replace(/\*\*/g, ""), bold: true, size: FONT_SIZE_HEADING, font: FONT_NAME })],
+            spacing: { before: 120, after: 40 },
         });
 
     const mkParagraph = (text: string) =>
         new Paragraph({
-            children: [new TextRun({ text, size: 22, font: "Calibri" })], // ~11pt
-            spacing: { after: 60 },
-            keepLines: true,
+            children: [new TextRun({ text: text.replace(/\*\*/g, ""), size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
+            spacing: { after: 20 },
+        });
+
+    const mkItalic = (text: string) =>
+        new Paragraph({
+            children: [new TextRun({ text, italics: true, size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
+            spacing: { after: 20 },
         });
 
     const mkBullet = (text: string) =>
         new Paragraph({
-            children: [new TextRun({ text, size: 22, font: "Calibri" })],
+            children: [new TextRun({ text: text.replace(/\*\*/g, ""), size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
             bullet: { level: 0 },
-            spacing: { after: 40 },
-            keepLines: true,
+            spacing: { after: 15 },
         });
 
-    for (const sec of sections) {
-        const lines = sec.split("\n").map((l) => l.trim()).filter(Boolean);
-        if (lines.length === 0) continue;
+    function compressBlock(lines: string[]) {
+        if (lines.length <= 1) return lines;
+        const merged = lines.slice(0, 3).join(" | ");
+        return [merged, ...lines.slice(3)];
+    }
 
+    // ---------- Main Parsing ----------
+    sections.forEach((sec, secIndex) => {
+        let lines = sec.split("\n").map((l) => l.trim()).filter(Boolean);
+        if (!lines.length) return;
+
+        // Remove markdown ###
+        lines = lines.map((l) => l.replace(/^###\s*/, ""));
+
+        // Name + Contact (first section)
+        if (secIndex === 0 && lines.length >= 2) {
+            children.push(new Paragraph({
+                children: [new TextRun({ text: lines[0].replace(/\*\*/g, ""), bold: true, size: FONT_SIZE_HEADING, font: FONT_NAME })],
+                spacing: { after: 10 },
+            }));
+            children.push(new Paragraph({
+                children: [new TextRun({ text: lines.slice(1).join(" | "), size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
+                spacing: { after: 30 },
+            }));
+            return;
+        }
+
+        // Headings detection
         if (lines.length === 1) {
             const single = lines[0];
-            const isAllCaps = /^[A-Z0-9 \-,&]+$/.test(single) && single.length <= 40;
+            const isAllCaps = /^[A-Z0-9 \-,&]+$/.test(single);
             const endsWithColon = /:$/.test(single);
             if (isAllCaps || endsWithColon) {
-                children.push(mkHeading(single.replace(/:$/, "")));
-                continue;
+                children.push(mkHeading(single.replace(/[:\*]/g, "").trim()));
+                return;
             }
         }
 
-        const bulletable = lines.every(
-            (ln) => /^[-•\*\u2022] /.test(ln) || /^\d+[\.\)] /.test(ln)
-        );
-        if (bulletable) {
-            for (const ln of lines) {
-                const cleaned = ln
-                    .replace(/^[-•\*\u2022]\s+/, "")
-                    .replace(/^\d+[\.\)]\s+/, "");
+        // Bullet list detection
+        const isBulletList = lines.every((ln) => /^[-•\*\u2022] /.test(ln) || /^\d+[\.\)] /.test(ln));
+        if (isBulletList) {
+            lines.forEach((ln) => {
+                const cleaned = ln.replace(/^[-•\*\u2022]\s+/, "").replace(/^\d+[\.\)]\s+/, "");
                 children.push(mkBullet(cleaned));
-            }
-            continue;
+            });
+            return;
         }
 
-        for (const ln of lines) {
-            if (/^[A-Za-z0-9 \-\/&]{1,60}:$/.test(ln)) {
-                children.push(mkHeading(ln.replace(/:$/, "")));
-            } else {
-                children.push(mkParagraph(ln));
+        // Experience / Education / Projects
+        const sectionKeywords = ["EXPERIENCE", "FREELANCE", "EDUCATION", "PROJECTS", "TECHNICAL PROJECTS", "SUMMARY"];
+        const isSection = sectionKeywords.some((h) => sec.toUpperCase().includes(h));
+
+        if (isSection) {
+            lines = compressBlock(lines);
+
+            // Professional Summary / Description
+            if (sec.toUpperCase().includes("SUMMARY")) {
+                children.push(mkHeading("PROFESSIONAL SUMMARY"));
+                children.push(mkParagraph(lines.join(" ")));
+                return;
+            }
+
+            // Experience / Education
+            if (sec.toUpperCase().includes("EXPERIENCE") || sec.toUpperCase().includes("FREELANCE") || sec.toUpperCase().includes("EDUCATION")) {
+                const title = lines[0];
+                const companyOrUniversity = lines[1] || "";
+                const date = lines[2] || "";
+
+                children.push(mkHeading(title));
+                if (companyOrUniversity || date) {
+                    children.push(mkItalic([companyOrUniversity, date].filter(Boolean).join(" | ")));
+                }
+
+                lines.slice(3).forEach((ln) => children.push(mkBullet(ln)));
+                return;
+            }
+
+            // Projects
+            if (sec.toUpperCase().includes("PROJECTS")) {
+                children.push(mkHeading(lines[0]));
+                lines.slice(1).forEach((ln) => {
+                    if (/^[-•\*\u2022]/.test(ln)) {
+                        const cleaned = ln.replace(/^[-•\*\u2022]\s+/, "");
+                        children.push(mkBullet(cleaned));
+                    } else {
+                        children.push(mkParagraph(ln));
+                    }
+                });
+                return;
             }
         }
-    }
+
+        // Default paragraph
+        lines.forEach((ln) => children.push(mkParagraph(ln)));
+    });
 
     const doc = new Document({
         sections: [
             {
                 properties: {
-                    page: {
-                        margin: { top: 720, right: 720, bottom: 720, left: 720 }, // 0.5 inch margins
-                    },
+                    page: { margin: { top: 480, right: 480, bottom: 480, left: 480 } }, // 0.33 inch margins to reduce blank space
                 },
                 children,
             },
@@ -175,3 +240,4 @@ export const downloadAsDOCX = async (resultText: string) => {
     a.remove();
     URL.revokeObjectURL(url);
 };
+

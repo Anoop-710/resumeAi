@@ -11,7 +11,7 @@ import JobResumeOptimizer from '../components/JobResumeOptimizer';
 import TechStackResume from '../components/TechStackResume';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import ThemeGreen from '@/components/Theme';
-import ColorTest from './ColorTest';
+
 export default function Home() {
 
   const { darkMode } = useDarkMode();
@@ -29,7 +29,6 @@ export default function Home() {
           <TechStackResume />
         </div>
       </main>
-      <ColorTest theme={theme} />
 
       <Footer darkMode={darkMode} />
     </div>

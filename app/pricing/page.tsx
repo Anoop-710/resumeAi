@@ -98,50 +98,82 @@ export default function PricingPage() {
     ];
 
     return (
-        <div className={`min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-slate-50 to-blue-50'}`}>
+        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-emerald-950 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-emerald-50'}`}>
             <Navbar />
 
             {/* Hero Section */}
-            <section className="py-20 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-4xl mx-auto text-center">
+            <section className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/5 to-transparent"></div>
+                <div className="max-w-4xl mx-auto text-center relative z-10">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <h1 className={`text-4xl md:text-6xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6`}>
-                            Choose Your
-                            <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mb-8 ${darkMode
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                }`}
+                        >
+                            <Star className="h-4 w-4 mr-2" />
+                            Simple, Transparent Pricing
+                        </motion.div>
+
+                        <h1 className={`text-5xl md:text-7xl font-bold mb-8 leading-tight`}>
+                            <span className={`${darkMode ? 'text-white' : 'text-gray-900'} block`}>
+                                Choose Your
+                            </span>
+                            <span className={`block bg-gradient-to-r ${darkMode ? 'from-emerald-400 to-indigo-400' : 'from-emerald-600 to-indigo-600'} bg-clip-text text-transparent`}>
                                 Perfect Plan
                             </span>
                         </h1>
-                        <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-8 max-w-2xl mx-auto`}>
+
+                        <motion.p
+                            className={`text-xl md:text-2xl ${darkMode ? 'text-emerald-100' : 'text-gray-600'} mb-12 max-w-3xl mx-auto leading-relaxed`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                        >
                             Transform your career with AI-powered resume optimization.
                             Choose the plan that fits your needs and start creating resumes that get noticed.
-                        </p>
+                        </motion.p>
 
                         {/* Billing Toggle */}
-                        <div className="flex items-center justify-center space-x-4 mb-12">
-                            <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} font-medium`}>
+                        <motion.div
+                            className="flex items-center justify-center space-x-4 mb-12"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.6 }}
+                        >
+                            <span className={`${darkMode ? 'text-emerald-200' : 'text-gray-700'} font-medium text-lg`}>
                                 Monthly
                             </span>
                             <button
                                 onClick={() => setIsAnnual(!isAnnual)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${isAnnual ? 'bg-blue-600' : 'bg-gray-300'
+                                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${isAnnual
+                                    ? (darkMode ? 'bg-emerald-500' : 'bg-emerald-600')
+                                    : (darkMode ? 'bg-gray-600' : 'bg-gray-300')
                                     }`}
                             >
                                 <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${isAnnual ? 'translate-x-6' : 'translate-x-1'
+                                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${isAnnual ? 'translate-x-6' : 'translate-x-1'
                                         }`}
                                 />
                             </button>
-                            <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} font-medium`}>
+                            <span className={`${darkMode ? 'text-emerald-200' : 'text-gray-700'} font-medium text-lg`}>
                                 Annual
                             </span>
-                            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <div className={`px-4 py-2 rounded-full text-sm font-semibold ${darkMode
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                }`}>
                                 Save 20%
                             </div>
-                        </div>
+                        </motion.div>
                     </motion.div>
                 </div>
             </section>
@@ -156,16 +188,19 @@ export default function PricingPage() {
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                                className={`relative rounded-2xl shadow-xl border transition-all duration-300 hover:shadow-2xl ${plan.popular
-                                    ? 'border-blue-500 scale-105'
+                                className={`relative rounded-2xl shadow-xl border transition-all duration-300 hover:shadow-2xl backdrop-blur-sm ${plan.popular
+                                    ? (darkMode ? 'border-emerald-500 scale-105 bg-gray-800/50' : 'border-emerald-300 scale-105 bg-white/80')
                                     : darkMode
-                                        ? 'border-gray-700 bg-gray-800'
-                                        : 'border-gray-100 bg-white'
+                                        ? 'border-gray-700 bg-gray-800/50'
+                                        : 'border-gray-200 bg-white/80'
                                     } p-8`}
                             >
                                 {plan.popular && (
                                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1">
+                                        <div className={`text-white px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-1 ${darkMode
+                                            ? 'bg-gradient-to-r from-emerald-500 to-indigo-600'
+                                            : 'bg-gradient-to-r from-emerald-600 to-indigo-600'
+                                            }`}>
                                             <Star className="h-4 w-4" />
                                             <span>Most Popular</span>
                                         </div>
@@ -215,7 +250,7 @@ export default function PricingPage() {
 
                                 <motion.button
                                     className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 group ${plan.popular
-                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white'
+                                        ? (darkMode ? 'bg-gradient-to-r from-emerald-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 text-white' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700 text-white')
                                         : `bg-gradient-to-r ${plan.buttonColor} text-white`
                                         }`}
                                     whileHover={{ scale: 1.05 }}
@@ -277,7 +312,8 @@ export default function PricingPage() {
                                 transition={{ duration: 0.6, delay: index * 0.1 }}
                                 className={`text-center p-6 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
                             >
-                                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-lg w-fit mx-auto mb-4">
+                                <div className={`p-3 rounded-lg w-fit mx-auto mb-4 ${darkMode ? 'bg-gradient-to-r from-emerald-500 to-indigo-600' : 'bg-gradient-to-r from-emerald-600 to-indigo-600'
+                                    }`}>
                                     <feature.icon className="h-8 w-8 text-white" />
                                 </div>
                                 <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>
@@ -344,21 +380,22 @@ export default function PricingPage() {
                         <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-lg mb-8`}>
                             Join thousands of professionals who have already improved their resumes with our AI-powered platform.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                             <motion.button
-                                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2 group"
-                                whileHover={{ scale: 1.05 }}
+                                className={`text-white px-12 py-5 rounded-2xl font-semibold text-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 group min-w-[250px] ${darkMode ? 'bg-gradient-to-r from-emerald-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700'
+                                    }`}
+                                whileHover={{ scale: 1.05, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
                             >
                                 <span>Start Free Trial</span>
-                                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
+                                <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
                             </motion.button>
                             <motion.button
-                                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-200 ${darkMode
-                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    }`}
-                                whileHover={{ scale: 1.05 }}
+                                className={`px-12 py-5 rounded-2xl font-semibold text-xl transition-all duration-300 min-w-[250px] ${darkMode
+                                        ? 'bg-gray-800/50 text-emerald-300 border-2 border-emerald-500/30 hover:bg-emerald-500/10 hover:border-emerald-400/50'
+                                        : 'bg-white/80 text-gray-700 border-2 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300'
+                                    } backdrop-blur-sm`}
+                                whileHover={{ scale: 1.05, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
                             >
                                 Contact Sales
