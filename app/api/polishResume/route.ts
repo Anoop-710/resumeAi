@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import mammoth from "mammoth";
 import fetch from "node-fetch";
 
-
+// --------------------
 // Helper to extract text from uploaded file
+// --------------------
 async function extractText(file: File | null): Promise<string> {
     if (!file) return "";
 
@@ -13,7 +14,6 @@ async function extractText(file: File | null): Promise<string> {
         const lower = file.name.toLowerCase();
 
         if (lower.endsWith(".pdf")) {
-            // Dynamic import for pdf-parse
             const pdfParse = (await import("pdf-parse")).default;
             const data = await pdfParse(buffer);
             return data.text;
@@ -30,9 +30,9 @@ async function extractText(file: File | null): Promise<string> {
     }
 }
 
-
-
-// OpenRouter call
+// --------------------
+// OpenRouter API call
+// --------------------
 async function callOpenRouter(prompt: string) {
     const apiKey = process.env.OPENROUTER_API_KEY;
 
@@ -40,12 +40,12 @@ async function callOpenRouter(prompt: string) {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${apiKey}`,
-            "HTTP-Referer": "http://localhost:3000", // or your deployed site URL
+            "HTTP-Referer": "http://localhost:3000",
             "X-Title": "AI Resume Builder",
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            model: "mistralai/mistral-small-3.2-24b-instruct:free",
+            model: "deepseek/deepseek-chat-v3.1:free",
             messages: [
                 {
                     role: "user",
@@ -72,7 +72,9 @@ async function callOpenRouter(prompt: string) {
     return data?.choices?.[0]?.message?.content || "";
 }
 
-
+// --------------------
+// POST Handler
+// --------------------
 export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
@@ -86,25 +88,114 @@ export async function POST(req: NextRequest) {
         if (resumeFile) resumeText = await extractText(resumeFile);
         if (jdFile) jdText = await extractText(jdFile);
 
+        // --------------------
+        // JSON Template for AI Output
+        // --------------------
+        const template = {
+            name: "",
+            contact: {
+                email: "",
+                phone: "",
+                linkedin: "",
+                address: "",
+                portfolio: ""
+            },
+            summary: "",
+            skills: {
+                languages: [],
+                frameworks: [],
+                databases: [],
+                tools: [],
+                concepts: []
+            },
+            experience: [
+                {
+                    title: "",
+                    company: "",
+                    dates: "",
+                    description: []
+                }
+            ],
+            education: [
+                {
+                    degree: "",
+                    university: "",
+                    graduationDate: ""
+                }
+            ],
+            projects: [
+                {
+                    name: "",
+                    description: ""
+                }
+            ],
+            achievements: [],
+            hobbies: [],
+            languages: []
+        };
 
-        // scenario detection
+        // --------------------
+        // Construct prompt
+        // --------------------
         let prompt = "";
         if (resumeText && jdText) {
-            prompt = `You are an expert resume writer. Please optimize this resume based on Job Description. Follow Jake's resume template. Make the resume ATS friendly. Just provide the resume, no extra words like "Here's your resume".Don't add any emojis or icons: \nJob Description:\n${jdText}\n\nResume:\n${resumeText}`;
+            prompt = `You are an expert resume writer. Optimize this resume based on the Job Description. 
+            Follow Jake's resume template. Make the resume ATS friendly. 
+            Return **ONLY JSON** matching this template exactly (including extra fields: achievements, hobbies, languages). 
+            If a section is not present in the resume, keep it empty. Do not include extra explanations or markdown.
+
+            Template:
+            ${JSON.stringify(template)}
+
+            Resume Text:
+            ${resumeText}
+
+            Job Description:
+            ${jdText}`;
         } else if (resumeText) {
-            prompt = `You are an expert resume writer. Please optimize this resume.Follow Jake's resume template.Just provide the resume. Make the resume ATS friendly. No extra words like "Here's your resume".Don't add any emojis or icons: \nResume:\n${resumeText}`;
+            prompt = `You are an expert resume writer. Optimize the resume to be ATS-friendly: improve phrasing, highlight accomplishments, combine repetitive points, and use professional wording. 
+            Return the output strictly as JSON matching this template (including achievements, hobbies, languages). 
+            If a section is not present, leave it empty. Do not include explanations, markdown, or extra text.
+
+            Template:
+            ${JSON.stringify(template)}
+
+            Resume Text:
+            ${resumeText}`;
         } else if (techStack) {
-            prompt = `You are an expert resume writer. The user don't have a resume. Please help the user to build a resume based on this tech stack. Follow Jake's resume template. Make the resume ATS friendly. Just provide the resume, no extra words like "Here's your resume".Don't add any emojis or icons: \nBuild a resume based on this tech stack: ${techStack}`;
+            prompt = `You are an expert resume writer. The user has no resume. Build a new resume based on this tech stack. Follow Jake's resume template. Make it ATS friendly. 
+            Return **ONLY JSON** matching this template exactly (including achievements, hobbies, languages). 
+            If a section is not present in the resume, keep it empty. Do not include extra explanations or markdown.
+
+            Template:
+            ${JSON.stringify(template)}
+
+            Tech Stack:
+            ${techStack}`;
         } else {
             return NextResponse.json({ text: "Please provide input." });
         }
 
-        const polishedText = await callOpenRouter(prompt);
-        return NextResponse.json({ text: polishedText });
+        // --------------------
+        // Call AI
+        // --------------------
+        const aiResponse = await callOpenRouter(prompt);
+
+        // --------------------
+        // Parse JSON safely
+        // --------------------
+        let polishedJSON = {};
+        try {
+            polishedJSON = JSON.parse(aiResponse);
+        } catch (err) {
+            console.error("Error parsing AI JSON:", err, "AI response:", aiResponse);
+            return NextResponse.json({ error: "Failed to parse AI response. Ensure AI returns valid JSON." }, { status: 500 });
+        }
+
+        return NextResponse.json({ data: polishedJSON });
 
     } catch (err: any) {
         console.error("Server error in /api/polishResume:", err);
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
-

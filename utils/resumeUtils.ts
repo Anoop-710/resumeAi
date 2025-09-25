@@ -1,5 +1,6 @@
 // utils/resumeUtils.ts
-
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
+import { saveAs } from "file-saver";
 // --------------------
 // File Upload Handler
 // --------------------
@@ -85,159 +86,158 @@ export const handleSubmit = async (
 // --------------------
 // Optimized DOCX Download
 // --------------------
-export const downloadAsDOCX = async (resultText: string) => {
-    const { Document, Packer, Paragraph, TextRun } = await import("docx");
 
-    const raw = resultText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-    const sections = raw.split(/\n{2,}/);
+export async function downloadAsDOCX(resultText: string) {
+    if (!resultText) return;
 
-    const children: any[] = [];
-
-    const FONT_SIZE_HEADING = 28; // ~14pt
-    const FONT_SIZE_PARAGRAPH = 24; // ~12pt
-    const FONT_NAME = "Calibri";
-
-    // ---------- Helpers ----------
-    const mkHeading = (text: string) =>
-        new Paragraph({
-            children: [new TextRun({ text: text.replace(/\*\*/g, ""), bold: true, size: FONT_SIZE_HEADING, font: FONT_NAME })],
-            spacing: { before: 120, after: 40 },
-        });
-
-    const mkParagraph = (text: string) =>
-        new Paragraph({
-            children: [new TextRun({ text: text.replace(/\*\*/g, ""), size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
-            spacing: { after: 20 },
-        });
-
-    const mkItalic = (text: string) =>
-        new Paragraph({
-            children: [new TextRun({ text, italics: true, size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
-            spacing: { after: 20 },
-        });
-
-    const mkBullet = (text: string) =>
-        new Paragraph({
-            children: [new TextRun({ text: text.replace(/\*\*/g, ""), size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
-            bullet: { level: 0 },
-            spacing: { after: 15 },
-        });
-
-    function compressBlock(lines: string[]) {
-        if (lines.length <= 1) return lines;
-        const merged = lines.slice(0, 3).join(" | ");
-        return [merged, ...lines.slice(3)];
+    let data: any;
+    try {
+        data = typeof resultText === "string" ? JSON.parse(resultText) : resultText;
+    } catch {
+        console.error("Invalid JSON");
+        return;
     }
-
-    // ---------- Main Parsing ----------
-    sections.forEach((sec, secIndex) => {
-        let lines = sec.split("\n").map((l) => l.trim()).filter(Boolean);
-        if (!lines.length) return;
-
-        // Remove markdown ###
-        lines = lines.map((l) => l.replace(/^###\s*/, ""));
-
-        // Name + Contact (first section)
-        if (secIndex === 0 && lines.length >= 2) {
-            children.push(new Paragraph({
-                children: [new TextRun({ text: lines[0].replace(/\*\*/g, ""), bold: true, size: FONT_SIZE_HEADING, font: FONT_NAME })],
-                spacing: { after: 10 },
-            }));
-            children.push(new Paragraph({
-                children: [new TextRun({ text: lines.slice(1).join(" | "), size: FONT_SIZE_PARAGRAPH, font: FONT_NAME })],
-                spacing: { after: 30 },
-            }));
-            return;
-        }
-
-        // Headings detection
-        if (lines.length === 1) {
-            const single = lines[0];
-            const isAllCaps = /^[A-Z0-9 \-,&]+$/.test(single);
-            const endsWithColon = /:$/.test(single);
-            if (isAllCaps || endsWithColon) {
-                children.push(mkHeading(single.replace(/[:\*]/g, "").trim()));
-                return;
-            }
-        }
-
-        // Bullet list detection
-        const isBulletList = lines.every((ln) => /^[-•\*\u2022] /.test(ln) || /^\d+[\.\)] /.test(ln));
-        if (isBulletList) {
-            lines.forEach((ln) => {
-                const cleaned = ln.replace(/^[-•\*\u2022]\s+/, "").replace(/^\d+[\.\)]\s+/, "");
-                children.push(mkBullet(cleaned));
-            });
-            return;
-        }
-
-        // Experience / Education / Projects
-        const sectionKeywords = ["EXPERIENCE", "FREELANCE", "EDUCATION", "PROJECTS", "TECHNICAL PROJECTS", "SUMMARY"];
-        const isSection = sectionKeywords.some((h) => sec.toUpperCase().includes(h));
-
-        if (isSection) {
-            lines = compressBlock(lines);
-
-            // Professional Summary / Description
-            if (sec.toUpperCase().includes("SUMMARY")) {
-                children.push(mkHeading("PROFESSIONAL SUMMARY"));
-                children.push(mkParagraph(lines.join(" ")));
-                return;
-            }
-
-            // Experience / Education
-            if (sec.toUpperCase().includes("EXPERIENCE") || sec.toUpperCase().includes("FREELANCE") || sec.toUpperCase().includes("EDUCATION")) {
-                const title = lines[0];
-                const companyOrUniversity = lines[1] || "";
-                const date = lines[2] || "";
-
-                children.push(mkHeading(title));
-                if (companyOrUniversity || date) {
-                    children.push(mkItalic([companyOrUniversity, date].filter(Boolean).join(" | ")));
-                }
-
-                lines.slice(3).forEach((ln) => children.push(mkBullet(ln)));
-                return;
-            }
-
-            // Projects
-            if (sec.toUpperCase().includes("PROJECTS")) {
-                children.push(mkHeading(lines[0]));
-                lines.slice(1).forEach((ln) => {
-                    if (/^[-•\*\u2022]/.test(ln)) {
-                        const cleaned = ln.replace(/^[-•\*\u2022]\s+/, "");
-                        children.push(mkBullet(cleaned));
-                    } else {
-                        children.push(mkParagraph(ln));
-                    }
-                });
-                return;
-            }
-        }
-
-        // Default paragraph
-        lines.forEach((ln) => children.push(mkParagraph(ln)));
-    });
 
     const doc = new Document({
         sections: [
             {
-                properties: {
-                    page: { margin: { top: 480, right: 480, bottom: 480, left: 480 } }, // 0.33 inch margins to reduce blank space
-                },
-                children,
+                children: [
+                    // Name
+                    new Paragraph({
+                        children: [new TextRun({ text: data.name || "", bold: true, size: 32 })],
+                        spacing: { after: 200 },
+                    }),
+
+                    // Contact
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: [
+                                    data.contact?.email,
+                                    data.contact?.phone,
+                                    data.contact?.linkedin,
+                                    data.contact?.address,
+                                    data.contact?.portfolio,
+                                ]
+                                    .filter(Boolean)
+                                    .join(" | "),
+                            }),
+                        ],
+                        spacing: { after: 200 },
+                    }),
+
+                    // Summary
+                    ...(data.summary
+                        ? [
+                            new Paragraph({ text: "PROFESSIONAL SUMMARY", heading: HeadingLevel.HEADING_2 }),
+                            new Paragraph({ children: [new TextRun({ text: data.summary })], spacing: { after: 200 } }),
+                        ]
+                        : []),
+
+                    // Skills
+                    ...(data.skills
+                        ? [
+                            new Paragraph({ text: "TECHNICAL SKILLS", heading: HeadingLevel.HEADING_2 }),
+                            ...Object.entries(data.skills)
+                                .filter(([_, items]) => Array.isArray(items) && items.length > 0)
+                                .map(([category, items]) =>
+                                    new Paragraph({
+                                        children: [
+                                            new TextRun({
+                                                text: `${category.charAt(0).toUpperCase() + category.slice(1)}: ${(
+                                                    items as any[]
+                                                ).join(", ")}`, // type assertion here
+                                            }),
+                                        ],
+                                        spacing: { after: 100 },
+                                    })
+                                )
+
+                        ]
+                        : []),
+
+                    // Experience
+                    ...(data.experience && Array.isArray(data.experience)
+                        ? [
+                            new Paragraph({ text: "PROFESSIONAL EXPERIENCE", heading: HeadingLevel.HEADING_2 }),
+                            ...data.experience.flatMap((exp: any) => [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: `${exp.title} | ${exp.company} | ${exp.dates || ""}`,
+                                            bold: true,
+                                        }),
+                                    ],
+                                    spacing: { after: 100 },
+                                }),
+                                ...(exp.description || []).map(
+                                    (desc: string) =>
+                                        new Paragraph({ text: `• ${desc}`, spacing: { after: 50 } })
+                                ),
+                            ]),
+                        ]
+                        : []),
+
+                    // Education
+                    ...(data.education && Array.isArray(data.education)
+                        ? [
+                            new Paragraph({ text: "EDUCATION", heading: HeadingLevel.HEADING_2 }),
+                            ...data.education.map((edu: any) =>
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: `${edu.degree} | ${edu.university} | ${edu.graduationDate || ""}`,
+                                            bold: true,
+                                        }),
+                                    ],
+                                    spacing: { after: 100 },
+                                })
+                            ),
+                        ]
+                        : []),
+
+                    // Projects
+                    ...(data.projects && Array.isArray(data.projects)
+                        ? [
+                            new Paragraph({ text: "PROJECTS", heading: HeadingLevel.HEADING_2 }),
+                            ...data.projects.flatMap((proj: any) => [
+                                new Paragraph({ children: [new TextRun({ text: proj.name, bold: true })], spacing: { after: 50 } }),
+                                new Paragraph({ text: proj.description || "", spacing: { after: 100 } }),
+                            ]),
+                        ]
+                        : []),
+
+                    // Optional: Achievements
+                    ...(data.achievements && Array.isArray(data.achievements) && data.achievements.length > 0
+                        ? [
+                            new Paragraph({ text: "ACHIEVEMENTS", heading: HeadingLevel.HEADING_2 }),
+                            ...data.achievements.map((ach: string) => new Paragraph({ text: `• ${ach}`, spacing: { after: 50 } })),
+                        ]
+                        : []),
+
+                    // Optional: Hobbies
+                    ...(data.hobbies && Array.isArray(data.hobbies) && data.hobbies.length > 0
+                        ? [
+                            new Paragraph({ text: "HOBBIES", heading: HeadingLevel.HEADING_2 }),
+                            ...data.hobbies.map((h: string) => new Paragraph({ text: h, spacing: { after: 50 } })),
+                        ]
+                        : []),
+
+                    // Optional: Languages
+                    ...(data.languages && Array.isArray(data.languages) && data.languages.length > 0
+                        ? [
+                            new Paragraph({ text: "LANGUAGES", heading: HeadingLevel.HEADING_2 }),
+                            ...data.languages.map((l: string) => new Paragraph({ text: l, spacing: { after: 50 } })),
+                        ]
+                        : []),
+                ],
             },
         ],
     });
 
     const blob = await Packer.toBlob(doc);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resume.docx";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-};
+    saveAs(blob, "optimized_resume.docx");
+}
+
+
 

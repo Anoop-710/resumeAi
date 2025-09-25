@@ -1,3 +1,4 @@
+// components/ResumePDF.tsx
 import React, { JSX, useMemo } from "react";
 import { Page, Text, View, Document, StyleSheet, Font } from "@react-pdf/renderer";
 
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
         lineHeight: 1.3,
     },
     name: {
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: "bold",
         textAlign: "center",
         marginBottom: 4,
@@ -33,18 +34,18 @@ const styles = StyleSheet.create({
     contact: {
         fontSize: 9.5,
         textAlign: "center",
-        marginBottom: 6,
+        marginBottom: 8,
     },
     hr: {
         borderBottomWidth: 1,
         borderBottomColor: "#000",
         marginVertical: 6,
     },
-    header: {
-        fontSize: 12.5,
-        marginTop: 10,
-        marginBottom: 4,
+    sectionHeader: {
+        fontSize: 12,
         fontWeight: "bold",
+        marginTop: 12,
+        marginBottom: 4,
         textTransform: "uppercase",
     },
     paragraph: {
@@ -69,106 +70,113 @@ const styles = StyleSheet.create({
 });
 
 // --------------------
-// Helper: parse bold inline
+// Helper: render bullets
 // --------------------
-const renderTextWithBold = (text: string) => {
-    const parts = text.split(/(\*\*.*?\*\*)/g).filter(Boolean);
-    return parts.map((part, i) =>
-        part.startsWith("**") && part.endsWith("**") ? (
-            <Text key={i} style={{ fontWeight: "bold" }}>
-                {part.slice(2, -2)}
-            </Text>
-        ) : (
-            <Text key={i}>{part}</Text>
-        )
-    );
-};
-
-// --------------------
-// Helper: compress multi-line blocks for Experience/Education/Projects
-// --------------------
-const compressBlock = (lines: string[]) => {
-    if (lines.length <= 1) return lines;
-    // Join first 2–3 lines with " | "
-    const merged = lines.slice(0, 3).join(" | ");
-    const remaining = lines.slice(3);
-    return [merged, ...remaining];
+const renderBullets = (items: string[] = [], prefix = "") => {
+    return items.map((item, i) => (
+        <View key={`${prefix}-${i}`} style={styles.bulletItem}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bulletText}>{item}</Text>
+        </View>
+    ));
 };
 
 // --------------------
 // Main PDF Component
 // --------------------
-export const ResumePDF = ({ resultText }: { resultText: string }) => {
+interface ResumePDFProps {
+    data: any; // JSON from AI API
+}
+
+export const ResumePDF: React.FC<ResumePDFProps> = ({ data }) => {
     const content = useMemo(() => {
-        const raw = resultText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-        const sections = raw.split(/\n{2,}/);
         const elements: JSX.Element[] = [];
 
-        sections.forEach((sec, secIndex) => {
-            let lines = sec.split("\n").map((l) => l.trim()).filter(Boolean);
-            if (lines.length === 0) return;
+        // Name + Contact
+        if (data.name) elements.push(<Text key="name" style={styles.name}>{data.name}</Text>);
+        if (data.contact) {
+            const contactArr = [];
+            if (data.contact.email) contactArr.push(data.contact.email);
+            if (data.contact.phone) contactArr.push(data.contact.phone);
+            if (data.contact.linkedin) contactArr.push(data.contact.linkedin);
+            if (data.contact.address) contactArr.push(data.contact.address);
+            if (data.contact.portfolio) contactArr.push(data.contact.portfolio);
 
-            // Remove any markdown ###
-            lines = lines.map((l) => l.replace(/^###\s*/, ""));
+            elements.push(<Text key="contact" style={styles.contact}>{contactArr.join(" | ")}</Text>);
+            elements.push(<View key="hr" style={styles.hr} />);
+        }
 
-            // First section: Name + Contact
-            if (secIndex === 0 && lines.length >= 2) {
-                elements.push(
-                    <Text key="name" style={styles.name}>{lines[0].replace(/\*\*/g, "")}</Text>
-                );
-                elements.push(
-                    <Text key="contact" style={styles.contact}>{lines.slice(1).join(" | ")}</Text>
-                );
-                elements.push(<View key="hr" style={styles.hr} />);
-                return;
-            }
+        // Summary
+        if (data.summary) {
+            elements.push(<Text key="summaryHeader" style={styles.sectionHeader}>Summary</Text>);
+            elements.push(<Text key="summary" style={styles.paragraph}>{data.summary}</Text>);
+        }
 
-            // Heading detection
-            if (lines.length === 1) {
-                const single = lines[0];
-                const isAllCaps = /^[A-Z0-9 \-,&]+$/.test(single);
-                const endsWithColon = /:$/.test(single);
-                if (isAllCaps || endsWithColon) {
+        // Technical Skills - single line
+        // Technical Skills - each category on its own line
+        if (data.skills) {
+            elements.push(<Text key="skillsHeader" style={styles.sectionHeader}>Technical Skills</Text>);
+
+            Object.entries(data.skills).forEach(([category, items], idx) => {
+                if (Array.isArray(items) && items.length > 0) {
                     elements.push(
-                        <Text key={`h-${secIndex}`} style={styles.header}>{single.replace(/[:\*]/g, "").trim()}</Text>
+                        <Text key={`skills-${idx}`} style={styles.paragraph}>
+                            {`${category.charAt(0).toUpperCase() + category.slice(1)}: ${items.join(", ")}`}
+                        </Text>
                     );
-                    return;
                 }
-            }
-
-            // Bullet list detection
-            const isBulletList = lines.every((ln) => /^[-•\*\u2022] /.test(ln));
-            if (isBulletList) {
-                lines.forEach((ln, lnIndex) => {
-                    const cleaned = ln.replace(/^[-•\*\u2022]\s+/, "");
-                    elements.push(
-                        <View key={`b-${secIndex}-${lnIndex}`} style={styles.bulletItem}>
-                            <Text style={styles.bulletPoint}>•</Text>
-                            <Text style={styles.bulletText}>{renderTextWithBold(cleaned)}</Text>
-                        </View>
-                    );
-                });
-                return;
-            }
-
-            // Compress Experience, Education, Freelance, Projects sections
-            const headingWords = ["EXPERIENCE", "FREELANCE", "EDUCATION", "PROJECTS"];
-            if (secIndex > 0 && headingWords.some((h) => sec.toUpperCase().includes(h))) {
-                lines = compressBlock(lines);
-            }
-
-            // Render lines as paragraphs
-            lines.forEach((ln, lnIndex) => {
-                elements.push(
-                    <Text key={`p-${secIndex}-${lnIndex}`} style={styles.paragraph}>
-                        {renderTextWithBold(ln)}
-                    </Text>
-                );
             });
-        });
+        }
+
+
+        // Experience
+        if (data.experience && data.experience.length > 0) {
+            elements.push(<Text key="expHeader" style={styles.sectionHeader}>Professional Experience</Text>);
+            data.experience.forEach((job: any, idx: number) => {
+                const titleLine = [job.title, job.company, job.dates].filter(Boolean).join(" | ");
+                if (titleLine) elements.push(<Text key={`expTitle-${idx}`} style={{ fontWeight: "bold", marginTop: 4 }}>{titleLine}</Text>);
+                if (job.description) elements.push(...renderBullets(job.description, `exp-${idx}`));
+            });
+        }
+
+        // Education
+        if (data.education && data.education.length > 0) {
+            elements.push(<Text key="eduHeader" style={styles.sectionHeader}>Education</Text>);
+            data.education.forEach((edu: any, idx: number) => {
+                const eduLine = [edu.degree, edu.university, edu.graduationDate].filter(Boolean).join(" | ");
+                if (eduLine) elements.push(<Text key={`edu-${idx}`} style={styles.paragraph}>{eduLine}</Text>);
+            });
+        }
+
+        // Projects
+        if (data.projects && data.projects.length > 0) {
+            elements.push(<Text key="projHeader" style={styles.sectionHeader}>Projects</Text>);
+            data.projects.forEach((proj: any, idx: number) => {
+                if (proj.name) elements.push(<Text key={`projName-${idx}`} style={{ fontWeight: "bold", marginTop: 2 }}>{proj.name}</Text>);
+                if (proj.description) elements.push(...renderBullets([proj.description], `proj-${idx}`));
+            });
+        }
+
+        // Achievements
+        if (data.achievements && data.achievements.length > 0) {
+            elements.push(<Text key="achHeader" style={styles.sectionHeader}>Achievements</Text>);
+            elements.push(...renderBullets(data.achievements, "ach"));
+        }
+
+        // Hobbies
+        if (data.hobbies && data.hobbies.length > 0) {
+            elements.push(<Text key="hobbyHeader" style={styles.sectionHeader}>Hobbies</Text>);
+            elements.push(...renderBullets(data.hobbies, "hobby"));
+        }
+
+        // Languages
+        if (data.languages && data.languages.length > 0) {
+            elements.push(<Text key="langHeader" style={styles.sectionHeader}>Languages</Text>);
+            elements.push(...renderBullets(data.languages, "lang"));
+        }
 
         return elements;
-    }, [resultText]);
+    }, [data]);
 
     return (
         <Document title="Optimized Resume">
