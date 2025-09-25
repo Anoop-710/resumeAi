@@ -5,23 +5,15 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { ResumePDF } from './ResumePDF';
 
 interface PDFDownloadButtonProps {
-    resultText: string; // string returned from AI API (JSON string)
+    resultData: any; // raw data from AI API
 }
 
-export const PDFDownloadButton: React.FC<PDFDownloadButtonProps> = ({ resultText }) => {
-    if (!resultText) return null;
-
-    let parsedData = {};
-    try {
-        parsedData = JSON.parse(resultText).data || JSON.parse(resultText); // handle { data: {...} } or raw JSON
-    } catch (err) {
-        console.error("Failed to parse AI JSON:", err);
-        return <p className="text-red-500">Invalid resume data</p>;
-    }
+export const PDFDownloadButton: React.FC<PDFDownloadButtonProps> = ({ resultData }) => {
+    if (!resultData) return null;
 
     return (
         <PDFDownloadLink
-            document={<ResumePDF data={parsedData} />}
+            document={<ResumePDF data={resultData} />}
             fileName="optimized_resume.pdf"
             className="flex items-center justify-center space-x-2 w-full h-full"
         >

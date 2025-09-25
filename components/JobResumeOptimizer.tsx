@@ -9,6 +9,195 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import { downloadAsDOCX, postFormData } from '../utils/resumeUtils';
 import { PDFDownloadButton } from './PDFDownloadButton';
 
+// Type definitions for resume data
+interface ContactInfo {
+    email?: string;
+    phone?: string;
+    linkedin?: string;
+    address?: string;
+    portfolio?: string;
+}
+
+interface Skills {
+    languages?: string[];
+    frameworks?: string[];
+    databases?: string[];
+    tools?: string[];
+    concepts?: string[];
+}
+
+interface Experience {
+    title?: string;
+    company?: string;
+    dates?: string;
+    description?: string[];
+}
+
+interface Education {
+    degree?: string;
+    university?: string;
+    graduationDate?: string;
+}
+
+interface Project {
+    name?: string;
+    description?: string;
+}
+
+interface ResumeData {
+    name?: string;
+    contact?: ContactInfo;
+    summary?: string;
+    skills?: Skills;
+    experience?: Experience[];
+    education?: Education[];
+    projects?: Project[];
+    achievements?: string[];
+    hobbies?: string[];
+    languages?: string[];
+}
+
+// Helper function to format resume JSON data to readable text
+function formatResumeData(data: ResumeData | unknown): string {
+    if (!data || typeof data !== 'object') {
+        return typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    }
+
+    // Type assertion for the data object
+    const resumeData = data as ResumeData;
+    let formatted = '';
+
+    // Name
+    if (resumeData.name) {
+        formatted += `${resumeData.name}\n${'='.repeat(resumeData.name.length)}\n\n`;
+    }
+
+    // Contact Information
+    if (resumeData.contact) {
+        formatted += 'CONTACT INFORMATION\n';
+        formatted += '--------------------\n';
+        if (resumeData.contact.email) formatted += `Email: ${resumeData.contact.email}\n`;
+        if (resumeData.contact.phone) formatted += `Phone: ${resumeData.contact.phone}\n`;
+        if (resumeData.contact.linkedin) formatted += `LinkedIn: ${resumeData.contact.linkedin}\n`;
+        if (resumeData.contact.address) formatted += `Address: ${resumeData.contact.address}\n`;
+        if (resumeData.contact.portfolio) formatted += `Portfolio: ${resumeData.contact.portfolio}\n`;
+        formatted += '\n';
+    }
+
+    // Summary
+    if (resumeData.summary) {
+        formatted += 'PROFESSIONAL SUMMARY\n';
+        formatted += '--------------------\n';
+        formatted += `${resumeData.summary}\n\n`;
+    }
+
+    // Skills
+    if (resumeData.skills) {
+        formatted += 'SKILLS\n';
+        formatted += '------\n';
+
+        const skills = resumeData.skills;
+        if (skills.languages && skills.languages.length > 0) {
+            formatted += `Languages: ${skills.languages.join(', ')}\n`;
+        }
+        if (skills.frameworks && skills.frameworks.length > 0) {
+            formatted += `Frameworks: ${skills.frameworks.join(', ')}\n`;
+        }
+        if (skills.databases && skills.databases.length > 0) {
+            formatted += `Databases: ${skills.databases.join(', ')}\n`;
+        }
+        if (skills.tools && skills.tools.length > 0) {
+            formatted += `Tools: ${skills.tools.join(', ')}\n`;
+        }
+        if (skills.concepts && skills.concepts.length > 0) {
+            formatted += `Concepts: ${skills.concepts.join(', ')}\n`;
+        }
+        formatted += '\n';
+    }
+
+    // Experience
+    if (resumeData.experience && resumeData.experience.length > 0) {
+        formatted += 'PROFESSIONAL EXPERIENCE\n';
+        formatted += '-----------------------\n';
+
+        resumeData.experience.forEach((exp: Experience, index: number) => {
+            if (exp.title || exp.company) {
+                formatted += `${index + 1}. `;
+                if (exp.title) formatted += `${exp.title}`;
+                if (exp.company) formatted += ` at ${exp.company}`;
+                if (exp.dates) formatted += ` (${exp.dates})`;
+                formatted += '\n';
+
+                if (exp.description && exp.description.length > 0) {
+                    exp.description.forEach((desc: string) => {
+                        formatted += `   • ${desc}\n`;
+                    });
+                }
+                formatted += '\n';
+            }
+        });
+    }
+
+    // Education
+    if (resumeData.education && resumeData.education.length > 0) {
+        formatted += 'EDUCATION\n';
+        formatted += '---------\n';
+
+        resumeData.education.forEach((edu: Education, index: number) => {
+            if (edu.degree || edu.university) {
+                formatted += `${index + 1}. `;
+                if (edu.degree) formatted += `${edu.degree}`;
+                if (edu.university) formatted += ` - ${edu.university}`;
+                if (edu.graduationDate) formatted += ` (${edu.graduationDate})`;
+                formatted += '\n';
+            }
+        });
+        formatted += '\n';
+    }
+
+    // Projects
+    if (resumeData.projects && resumeData.projects.length > 0) {
+        formatted += 'PROJECTS\n';
+        formatted += '--------\n';
+
+        resumeData.projects.forEach((project: Project, index: number) => {
+            if (project.name || project.description) {
+                formatted += `${index + 1}. `;
+                if (project.name) formatted += `${project.name}`;
+                formatted += '\n';
+                if (project.description) formatted += `   ${project.description}\n`;
+                formatted += '\n';
+            }
+        });
+    }
+
+    // Achievements
+    if (resumeData.achievements && resumeData.achievements.length > 0) {
+        formatted += 'ACHIEVEMENTS\n';
+        formatted += '------------\n';
+        resumeData.achievements.forEach((achievement: string) => {
+            formatted += `• ${achievement}\n`;
+        });
+        formatted += '\n';
+    }
+
+    // Hobbies
+    if (resumeData.hobbies && resumeData.hobbies.length > 0) {
+        formatted += 'HOBBIES & INTERESTS\n';
+        formatted += '-------------------\n';
+        formatted += `${resumeData.hobbies.join(', ')}\n\n`;
+    }
+
+    // Languages
+    if (resumeData.languages && resumeData.languages.length > 0) {
+        formatted += 'LANGUAGES\n';
+        formatted += '---------\n';
+        formatted += `${resumeData.languages.join(', ')}\n\n`;
+    }
+
+    return formatted.trim();
+}
+
 export default function JobResumeOptimizer() {
     const { darkMode } = useDarkMode();
 
@@ -20,6 +209,7 @@ export default function JobResumeOptimizer() {
 
     const [loading, setLoading] = useState(false);
     const [resultText, setResultText] = useState('');
+    const [resultData, setResultData] = useState<ResumeData | null>(null);
     const [error, setError] = useState('');
 
     const handleFileChange = (key: 'resume2' | 'jobDescription') => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +264,11 @@ export default function JobResumeOptimizer() {
             }
 
             const data = await postFormData('/api/polishResume', formData);
-            setResultText(data.text ?? JSON.stringify(data));
+            // Store raw data for PDF generation and format text for display
+            const resumeData = data.data || data;
+            setResultData(resumeData);
+            const formattedText = formatResumeData(resumeData);
+            setResultText(formattedText);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
@@ -176,7 +370,7 @@ export default function JobResumeOptimizer() {
                         {resultText && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <motion.button className={`px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 group ${darkMode ? 'bg-gradient-to-r from-emerald-500 to-indigo-600 hover:from-emerald-600 hover:to-indigo-700 hover:shadow-2xl' : 'bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700 hover:shadow-2xl'} text-white`} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                    <PDFDownloadButton resultText={resultText} />
+                                    <PDFDownloadButton resultData={resultData} />
                                 </motion.button>
 
                                 <motion.button onClick={handleReset} className={`px-4 sm:px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 group ${darkMode ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-400/50' : 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 hover:bg-emerald-200 hover:border-emerald-300'} backdrop-blur-sm`} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
