@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Upload, ChevronRight, FileDown } from 'lucide-react';
+import { FileText, Upload, ChevronRight, FileDown, Copy, Check } from 'lucide-react';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import { downloadAsDOCX, postFormData } from '../utils/resumeUtils';
 import { PDFDownloadButton } from './PDFDownloadButton';
@@ -211,6 +211,7 @@ export default function JobResumeOptimizer() {
     const [resultText, setResultText] = useState('');
     const [resultData, setResultData] = useState<ResumeData | null>(null);
     const [error, setError] = useState('');
+    const [copied, setCopied] = useState(false);
 
     const handleFileChange = (key: 'resume2' | 'jobDescription') => (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0] ?? null;
@@ -281,8 +282,20 @@ export default function JobResumeOptimizer() {
         setResume2Text('');
         setJobDescriptionText('');
         setResultText('');
+        setResultData(null);
         setError('');
         setLoading(false);
+        setCopied(false);
+    };
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(resultText);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
     };
 
     return (
@@ -383,7 +396,33 @@ export default function JobResumeOptimizer() {
 
                     {error && <p className="text-red-500 mt-2">{error}</p>}
                     {loading && <p className="text-gray-500 mt-2">Processing...</p>}
-                    {resultText && <pre className={`mt-4 whitespace-pre-wrap ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{resultText}</pre>}
+                    {resultText && (
+                        <div className="relative mt-4">
+                            <div className="absolute top-2 right-2 z-10">
+                                <motion.button
+                                    onClick={handleCopy}
+                                    className={`p-2 rounded-lg transition-all duration-200 ${darkMode
+                                            ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'
+                                            : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
+                                        }`}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    {copied ? (
+                                        <Check className="h-4 w-4" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
+                                </motion.button>
+                            </div>
+                            <pre className={`whitespace-pre-wrap p-4 rounded-xl border ${darkMode
+                                    ? 'bg-emerald-950/30 border-emerald-500/30 text-gray-100'
+                                    : 'bg-gray-50 border-gray-200 text-gray-800'
+                                }`}>
+                                {resultText}
+                            </pre>
+                        </div>
+                    )}
 
                 </div>
             </div>

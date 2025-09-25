@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
             Follow Jake's resume template. Make the resume ATS friendly. 
             Return **ONLY JSON** matching this template exactly (including extra fields: achievements, hobbies, languages). 
             If a section is not present in the resume, keep it empty. Do not include extra explanations or markdown.
-
+            IMPORTANT: Do not include "json fences or markdown. Output raw JSON only"
             Template:
             ${JSON.stringify(template)}
 
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
             prompt = `You are an expert resume writer. Optimize the resume to be ATS-friendly: improve phrasing, highlight accomplishments, combine repetitive points, and use professional wording. 
             Return the output strictly as JSON matching this template (including achievements, hobbies, languages). 
             If a section is not present, leave it empty. Do not include explanations, markdown, or extra text.
-
+            IMPORTANT: Do not include "json fences or markdown. Output raw JSON only"
             Template:
             ${JSON.stringify(template)}
 
@@ -165,8 +165,8 @@ export async function POST(req: NextRequest) {
         } else if (techStack) {
             prompt = `You are an expert resume writer. The user has no resume. Build a new resume based on this tech stack. Follow Jake's resume template. Make it ATS friendly. 
             Return **ONLY JSON** matching this template exactly (including achievements, hobbies, languages). 
-            If a section is not present in the resume, keep it empty. Do not include extra explanations or markdown.
-
+            If a section is not present in the resume, instruct user to add the content. For example: If "projects" field is empty, return "Projects" Add your projects here. Should be applied for every field
+            IMPORTANT: Do not include "json fences or markdown. Output raw JSON only"
             Template:
             ${JSON.stringify(template)}
 
