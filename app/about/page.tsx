@@ -10,33 +10,6 @@ import { useDarkMode } from '../../contexts/DarkModeContext';
 export default function AboutPage() {
     const { darkMode } = useDarkMode();
 
-    const values = [
-        {
-            icon: Target,
-            title: 'Precision',
-            description: 'We use advanced AI to ensure every resume is perfectly tailored to the job requirements and passes ATS systems.',
-            color: 'from-emerald-500 to-teal-600'
-        },
-        {
-            icon: Heart,
-            title: 'Empathy',
-            description: 'We understand the challenges of job searching and career transitions, so we build tools that truly help people succeed.',
-            color: 'from-rose-500 to-pink-600'
-        },
-        {
-            icon: Lightbulb,
-            title: 'Innovation',
-            description: 'We continuously improve our AI models and user experience to stay ahead of industry trends and best practices.',
-            color: 'from-amber-500 to-orange-600'
-        },
-        {
-            icon: Users,
-            title: 'Community',
-            description: 'We believe in supporting job seekers at every stage of their career journey, from entry-level to executive positions.',
-            color: 'from-indigo-500 to-purple-600'
-        }
-    ];
-
     const stats = [
         { number: '500+', label: 'Resumes Optimized', icon: TrendingUp },
         { number: '98%', label: 'ATS Pass Rate', icon: Target },
@@ -52,7 +25,7 @@ export default function AboutPage() {
         {
             icon: Award,
             title: 'Industry Leading',
-            description: 'Trusted by professionals across all industries and experience levels.'
+            description: 'We use cutting-edge AI technology to optimize resumes for top-tier companies.'
         },
         {
             icon: Target,
@@ -183,57 +156,6 @@ export default function AboutPage() {
                                     <div className={`font-semibold text-lg ${darkMode ? 'text-emerald-200' : 'text-gray-700'}`}>
                                         {stat.label}
                                     </div>
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </section>
-
-            {/* Values Section */}
-            <section className="py-20 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-6xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="text-center mb-16"
-                    >
-                        <h2 className={`text-3xl md:text-5xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            Our Core
-                            <span className={`block bg-gradient-to-r ${darkMode ? 'from-emerald-400 to-indigo-400' : 'from-emerald-600 to-indigo-600'} bg-clip-text text-transparent`}>
-                                Values
-                            </span>
-                        </h2>
-                        <p className={`${darkMode ? 'text-emerald-200' : 'text-gray-600'} text-xl max-w-3xl mx-auto`}>
-                            The principles that guide everything we do
-                        </p>
-                    </motion.div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {values.map((value, index) => {
-                            const IconComponent = value.icon;
-                            return (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                                    whileHover={{ scale: 1.02, y: -5 }}
-                                    className={`group p-8 rounded-2xl transition-all duration-300 ${darkMode
-                                        ? 'bg-gray-800/50 border border-gray-700 hover:border-emerald-500/30'
-                                        : 'bg-white/80 border border-gray-200 hover:border-emerald-300'
-                                        } backdrop-blur-sm hover:shadow-xl`}
-                                >
-                                    <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl mb-6 bg-gradient-to-r ${value.color} text-white group-hover:scale-110 transition-transform duration-300`}>
-                                        <IconComponent className="h-7 w-7" />
-                                    </div>
-                                    <h3 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        {value.title}
-                                    </h3>
-                                    <p className={`${darkMode ? 'text-emerald-200' : 'text-gray-600'} leading-relaxed`}>
-                                        {value.description}
-                                    </p>
                                 </motion.div>
                             );
                         })}
