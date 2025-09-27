@@ -17,7 +17,7 @@ export default function Home() {
   const { darkMode } = useDarkMode();
   const theme = darkMode ? ThemeGreen.dark : ThemeGreen.light;
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-slate-50 to-blue-50'}`}>
+    <div className={`min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gradient-to-br from-emerald-950 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-emerald-100'}`}>
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

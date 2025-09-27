@@ -61,10 +61,8 @@ export default function PricingPage() {
                 'Bulk resume processing',
                 'Custom templates',
                 'API access',
-                'Dedicated account manager',
                 'Advanced analytics',
-                'White-label options',
-                '24/7 phone support',
+                'Advanced integrations',
                 'Custom integrations'
             ],
             limitations: [],
@@ -98,7 +96,7 @@ export default function PricingPage() {
     ];
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-emerald-950 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-emerald-50'}`}>
+        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-emerald-950 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-emerald-100'}`}>
             <Navbar />
 
             {/* Hero Section */}
@@ -392,8 +390,8 @@ export default function PricingPage() {
                             </motion.button>
                             <motion.button
                                 className={`px-12 py-5 rounded-2xl font-semibold text-xl transition-all duration-300 min-w-[250px] ${darkMode
-                                        ? 'bg-gray-800/50 text-emerald-300 border-2 border-emerald-500/30 hover:bg-emerald-500/10 hover:border-emerald-400/50'
-                                        : 'bg-white/80 text-gray-700 border-2 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300'
+                                    ? 'bg-gray-800/50 text-emerald-300 border-2 border-emerald-500/30 hover:bg-emerald-500/10 hover:border-emerald-400/50'
+                                    : 'bg-white/80 text-gray-700 border-2 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300'
                                     } backdrop-blur-sm`}
                                 whileHover={{ scale: 1.05, y: -2 }}
                                 whileTap={{ scale: 0.95 }}

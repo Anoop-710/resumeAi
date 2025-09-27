@@ -35,7 +35,7 @@ export default function AboutPage() {
     ];
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-emerald-950 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-emerald-50'}`}>
+        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-emerald-950 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-emerald-100'}`}>
             <Navbar />
 
             {/* Hero Section */}
