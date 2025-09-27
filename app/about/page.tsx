@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Users, Target, Heart, Lightbulb, Rocket, Star, Award, TrendingUp, Zap } from 'lucide-react';
+import { Target, Rocket, Star, Award, TrendingUp, Zap } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import Link from 'next/link';
@@ -75,7 +75,7 @@ export default function AboutPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.4 }}
                         >
-                            We're on a mission to democratize access to professional resume optimization through AI.
+                            We&apos;re on a mission to democratize access to professional resume optimization through AI.
                             Every job seeker deserves a fighting chance, regardless of their background or experience level.
                         </motion.p>
 

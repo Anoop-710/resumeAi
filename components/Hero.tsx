@@ -17,8 +17,8 @@ export default function Hero({ darkMode }: HeroProps) {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className={`inline-flex items-center px-6 py-3 rounded-full text-base font-medium mb-8 ${darkMode
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                     }`}
             >
                 🚀 Powered by Advanced AI
@@ -40,7 +40,7 @@ export default function Hero({ darkMode }: HeroProps) {
                 transition={{ duration: 0.6, delay: 0.4 }}
             >
                 Transform your career with our intelligent resume optimization platform.
-                Whether you're starting from scratch or perfecting your existing resume,
+                Whether you&apos;re starting from scratch or perfecting your existing resume,
                 our AI creates resumes that get noticed by recruiters and pass ATS systems.
             </motion.p>
         </motion.div>

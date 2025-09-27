@@ -113,7 +113,6 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({ data }) => {
         }
 
         // Technical Skills - single line
-        // Technical Skills - each category on its own line
         if (data.skills) {
             elements.push(<Text key="skillsHeader" style={styles.sectionHeader}>Technical Skills</Text>);
 

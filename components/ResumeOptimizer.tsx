@@ -4,9 +4,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, ChevronRight, FileDown, Copy, Check } from 'lucide-react';
+import { Upload, ChevronRight, Copy, Check } from 'lucide-react';
 import { useDarkMode } from '../contexts/DarkModeContext';
-import { downloadAsDOCX, postFormData } from '../utils/resumeUtils';
+import { postFormData } from '../utils/resumeUtils';
 import { PDFDownloadButton } from './PDFDownloadButton';
 
 // Type definitions for resume data
@@ -364,8 +364,8 @@ export default function ResumeOptimizer() {
                                     <motion.button
                                         onClick={handleCopy}
                                         className={`p-2 rounded-lg transition-all duration-200 ${darkMode
-                                                ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'
-                                                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
+                                            ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300'
+                                            : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
                                             }`}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
@@ -378,8 +378,8 @@ export default function ResumeOptimizer() {
                                     </motion.button>
                                 </div>
                                 <pre className={`whitespace-pre-wrap p-4 rounded-xl border ${darkMode
-                                        ? 'bg-emerald-950/30 border-emerald-500/30 text-gray-100'
-                                        : 'bg-gray-50 border-gray-200 text-gray-800'
+                                    ? 'bg-emerald-950/30 border-emerald-500/30 text-gray-100'
+                                    : 'bg-gray-50 border-gray-200 text-gray-800'
                                     }`}>
                                     {resultText}
                                 </pre>

@@ -10,12 +10,11 @@ import ResumeOptimizer from '../components/ResumeOptimizer';
 import JobResumeOptimizer from '../components/JobResumeOptimizer';
 import TechStackResume from '../components/TechStackResume';
 import { useDarkMode } from '../contexts/DarkModeContext';
-import ThemeGreen from '@/components/Theme';
 
 export default function Home() {
 
   const { darkMode } = useDarkMode();
-  const theme = darkMode ? ThemeGreen.dark : ThemeGreen.light;
+
   return (
     <div className={`min-h-screen transition-colors duration-200 ${darkMode ? 'bg-gradient-to-br from-emerald-950 to-gray-900' : 'bg-gradient-to-br from-gray-50 to-emerald-100'}`}>
       <Navbar />
