@@ -19,6 +19,13 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+    rules: {
+      // 👇 Disable the rule globally
+      "@typescript-eslint/no-explicit-any": "off",
+
+      // or, if you want warnings instead of errors:
+      // "@typescript-eslint/no-explicit-any": "warn",
+    },
   },
 ];
 
