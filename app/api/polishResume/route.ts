@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import mammoth from "mammoth";
 import fetch from "node-fetch";
 
+
 // --------------------
 // Helper to extract text from uploaded file
 // --------------------
@@ -29,6 +30,7 @@ async function extractText(file: File | null): Promise<string> {
         return "";
     }
 }
+
 
 // --------------------
 // OpenRouter API call
@@ -62,7 +64,8 @@ async function callOpenRouter(prompt: string) {
         }),
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as any;
+
 
     if (!response.ok) {
         console.error("OpenRouter error response:", data);
