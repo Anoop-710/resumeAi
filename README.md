@@ -1,3 +1,23 @@
+🚀 Resume Optimization App
+
+Upload your resume, tailor it for any job description, and highlight the right skills with a single click.
+
+Built with Next.js 14, styled with Tailwind CSS, and powered by OpenRouter LLMs.
+
+✨ Why This App?
+🧠 AI-Powered Optimization – polish resumes instantly for different job roles
+🎯 Role-Specific Tailoring – match job descriptions with skills & experience
+🛠 Tech Stack Focus – emphasize relevant frameworks, libraries, and tools
+🌗 Beautiful UI – light & dark themes designed for clarity and impact
+📂 Flexible Uploads – works with PDF, DOCX, and plain text resumes
+👉 Whether you’re a job seeker or a developer exploring AI apps, this tool is made for you.
+
+🏗 Tech Stack
+Framework: Next.js 15 (App Router)
+Frontend: React + Tailwind CSS
+AI Engine: OpenRouter (LLMs)
+File Parsing: Mammoth.js (DOCX), PDF/Text extractors
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
