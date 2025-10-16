@@ -203,11 +203,6 @@ export async function POST(req: NextRequest) {
     // --------------------
     let polishedJSON;
     try {
-      console.log(
-        "🔍 AI Raw Response (first 500 chars):",
-        aiResponse.slice(0, 500)
-      );
-
       polishedJSON = safeJSONParse(aiResponse);
     } catch (err) {
       console.error("Error parsing AI JSON:", err, "AI response:", aiResponse);
